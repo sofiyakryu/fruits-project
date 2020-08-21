@@ -1,56 +1,76 @@
-const {
-  MongoClient
-} = require("mongodb");
+const mongoose = require('mongoose');
 
-// Replace the uri string with your MongoDB deployment's connection string.
-const uri =
-  "mongodb://localhost:27017";
-
-const client = new MongoClient(uri, {
+mongoose.connect('mongodb://localhost:27017/fruitsDB', {
+  useNewUrlParser: true,
   useUnifiedTopology: true
 });
 
-async function run() {
-  try {
-    await client.connect();
+const fruitSchema = new mongoose.Schema({
+  name: String,
+  rating: Number,
+  review: String
+});
 
-    const database = client.db('fruitsDB');
-    const collection = database.collection('fruits');
-    console.log("Connected successfully to the server.");
-    const fruitsDocument = [{
-        name: "Strawberry",
-        score: 5,
-        review: "Great fruit"
-      },
-      {
-        name: "Watermelon",
-        score: 10,
-        review: "Kinda sour"
-      },
-      {
-        name: "Pear",
-        score: 3,
-        review: "Great stuff!"
-      }
-    ];
+const Fruit = mongoose.model("Fruit", fruitSchema);
 
-//find documents
-    const cursor = await collection.find();
-    if ((await cursor.count()) === 0) {
-      console.log("No documents found!");
-    }
-    await cursor.forEach(console.dir);
-    // Query for a fruit that has the name 'Banana'
-    // const query = { name: 'Banana' };
-    // const cursor = await collection.find(query);
+const fruit = new Fruit({
+  name: "Strawberry",
+  score: 5,
+  review: "Great fruit"
+});
 
-//insert new documents
-    // const result = await collection.insertMany(fruitsDocument, options);
-    // console.log(`${result.insertedCount} documents were inserted`);
+//fruit.save();
 
-  } finally {
-    // Ensures that the client will close when you finish/error
-    await client.close();
+const personSchema = new mongoose.Schema({
+  name: String,
+  age: Number
+});
+
+const Person = mongoose.model("Person", personSchema);
+
+const person = new Person({
+  name: "John",
+  age: 37
+});
+
+person.save();
+
+const kiwi = new Fruit({
+  name: "Kiwi",
+  score: 10,
+  review: "The best fruit"
+});
+
+const orange = new Fruit({
+  name: "Orange",
+  score: 4,
+  review: "Too sour for me"
+});
+
+const banana = new Fruit({
+  name: "Banana",
+  score: 3,
+  review: "Weird texture"
+});
+
+// Fruit.insertMany([kiwi, orange, banana], function(error){
+//   if (error) {
+//     console.log(error);
+//   } else {
+//     console.log("Succesfully saved all the fruits to fruitsDB");
+//   }
+// });
+
+
+Fruit.find(function(error, fruits) {
+  if (error) {
+    console.log(error);
+  } else {
+
+    mongoose.connection.close();
+
+    fruits.forEach(function(fruit) {
+      console.log(fruit.name);
+    })
   }
-}
-run().catch(console.dir);
+});
